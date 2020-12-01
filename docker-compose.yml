@@ -1,0 +1,54 @@
+version: "3.7"
+
+services:
+  webserver:
+    image: brzdigital/docker-nginx
+    working_dir: /application
+    volumes:
+      - .:/application
+    ports:
+     - "80:80"
+    depends_on:
+      - memcached
+      - db
+      - redis
+
+  php-fpm:
+    image: brzdigital/docker-php
+    working_dir: /application
+    volumes:
+      - .:/application
+    depends_on:
+      - memcached
+      - db
+      - redis
+
+  db:
+    image: mysql:5.7
+    working_dir: /application
+    volumes:
+      - .:/application
+    environment:
+      - MYSQL_ROOT_PASSWORD=brzdigital
+      - MYSQL_DATABASE=app
+      - MYSQL_USER=brzdigital
+      - MYSQL_PASSWORD=brzdigital
+    ports:
+      - "3306:3306"
+
+  artisan:
+    image: vcarreira/artisan
+    working_dir: /application
+    volumes:
+      - .:/application
+    depends_on:
+      - webserver
+      - memcached
+      - db
+      - redis
+
+  memcached:
+    image: memcached:alpine
+
+  redis:
+    image: redis:alpine
